@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>web worker test</title>
+</head>
+
+<body>
+  <canvas id="canvas" width="320" height="200" />
+  <script>
+    let player = { x: 50, y: 50 },
+      worker = new Worker("worker.js"),
+      keyboard = {};
+
+    function updateWorker() {
+      console.log("Sending to worker", keyboard);
+      worker.postMessage(keyboard);
+    }
+    
+    function render() {
+      let ctx = document.getElementById("canvas").getContext("2d");
+      ctx.rect(player.x, player.y, 5, 5);
+      ctx.stroke();
+      
+      window.requestAnimationFrame(render);
+    }
+    
+    window.addEventListener("keydown", e => {
+      keyboard[e.key] = true;
+      updateWorker();
+    });
+
+    window.addEventListener("keyup", e => {
+      delete keyboard[e.key];
+      updateWorker();
+    });
+    
+    worker.addEventListener('message', e => {
+      console.log("recieved message", e);
+      player = e.data;
+    }, false);
+
+    render();
+  </script>
+</body>
+
+</html>
